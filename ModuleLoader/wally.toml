@@ -1,0 +1,8 @@
+[package]
+name = "hs747/moduleloader"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+authors = ["Wafflechad"]
+
+[dependencies]
