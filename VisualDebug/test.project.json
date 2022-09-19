@@ -1,0 +1,23 @@
+{
+    "name": "visualdebugtest",
+    "tree": {
+        "$className": "DataModel",
+        "ServerScriptService": {
+            "$path": "test/server"
+        },
+
+        "StarterPlayer": {
+            "StarterPlayerScripts": {
+                "$path": "test/client"
+            }
+        },
+
+        "ReplicatedStorage": {
+            "Shared": {
+                "VisualDebug": {
+                    "$path": "src"   
+                }
+            }
+        }
+    }
+}
