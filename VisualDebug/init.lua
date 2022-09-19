@@ -86,8 +86,10 @@ end
 local function getPart(t, cf, color, width, length)
 	local part
 	if t then
-		part = createPart()
-		debris:AddItem(part, t)
+		if not (t == visualDebug.PERMANENT) then
+			part = createPart()
+			debris:AddItem(part, t)
+		end
 	else
 		part = partPool:use()
 	end
@@ -119,6 +121,8 @@ local function render()
 end
 
 -- Public --
+visualDebug.PERMANENT = -1 -- time input flag to make a debug item permanent
+
 -- mini color library
 visualDebug.color = {
 	red 			= Color3.fromRGB(255, 0, 0),
