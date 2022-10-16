@@ -11,6 +11,7 @@ export type Connection = {
 export type Signal = {
     fire: (any...) -> (),
     connect: ((any...) -> ()) -> Connection,
+    wait: () -> (any...)
 }
 
 -- Private --
@@ -75,8 +76,19 @@ function Signal:connect(callback: (any...) -> ()): Connection
     return connection
 end
 
+function Signal:wait()
+    local running = coroutine.running()
+
+    self:connect(function(...)
+        coroutine.resume(running, ...)
+    end)
+
+    return coroutine.yield(running)
+end
+
 -- cringe aliases
 Signal.Fire = Signal.fire
 Signal.Connect = Signal.connect
+Signal.Wait = Signal.wait
 
 return Signal
