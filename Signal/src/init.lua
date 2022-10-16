@@ -22,13 +22,23 @@ function Connection.new(signal, callback): Connection
     self._callback = callback
     self._signal = signal
     self._index = 0 -- gets set by signal class
+
+    self._disconnected = false
+
     return self
 end
 
 function Connection:disconnect()
-    local last = #self._signal._connections
+    -- prevent multiple disconnectings (would be problematic)
+    if self._disconnected then return end
+    self._disconnected = true
+
+    local last = self._signal._numConnections
+
     self._signal._connections[self._index] = self._signal._connections[last]
     self._signal._connections[last] = nil
+
+    self._signal._numConnections -= 1
 end
 
 -- cringe alias
@@ -41,11 +51,12 @@ Signal.__index = Signal
 function Signal.new(): Signal
     local self = setmetatable({}, Signal)
     self._connections = {}
+    self._numConnections = 0
     return self
 end
 
 function Signal:fire(...: any?)
-    for i = 1, #self._connections do
+    for i = self._numConnections, 1, -1 do -- iterate backwards in case any connections disconnect themselves
         local callback = self._connections[i]._callback
         task.spawn(callback, ...)
     end
@@ -57,8 +68,10 @@ function Signal:connect(callback: (any...) -> ()): Connection
     end
 
     local connection = Connection.new(self, callback)
-    connection._index = #self._connections + 1
-    self._connections[#self._connections + 1] = connection
+    self._numConnections += 1
+    connection._index = self._numConnections
+    self._connections[self._numConnections] = connection
+
     return connection
 end
 
