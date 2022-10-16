@@ -4,13 +4,16 @@
 ]]
 
 -- Types --
+type Callback = (...any) -> ()
+
 export type Connection = {
     disconnect: () -> ();
 }
 
 export type Signal = {
     fire: (any...) -> (),
-    connect: ((any...) -> ()) -> Connection,
+    connect: (Callback) -> Connection,
+    once: (Callback) -> (),
     wait: () -> (any...)
 }
 
@@ -51,6 +54,7 @@ Signal.__index = Signal
 
 function Signal.new(): Signal
     local self = setmetatable({}, Signal)
+    self._onceCallbacks = {}
     self._connections = {}
     self._numConnections = 0
     return self
@@ -61,9 +65,15 @@ function Signal:fire(...: any?)
         local callback = self._connections[i]._callback
         task.spawn(callback, ...)
     end
+
+    for i = #self._onceCallbacks, 1, -1 do
+        local callback = self._onceCallbacks[i]
+        callback(...)
+    end
+    table.clear(self._onceCallbacks)
 end
 
-function Signal:connect(callback: (any...) -> ()): Connection
+function Signal:connect(callback: Callback): Connection
     if not (type(callback) == "function") then
         error("Invalid callback.")
     end
@@ -74,6 +84,14 @@ function Signal:connect(callback: (any...) -> ()): Connection
     self._connections[self._numConnections] = connection
 
     return connection
+end
+
+function Signal:once(callback: Callback)
+    if not (type(callback) == "function") then
+        error("Invalid callback.")
+    end
+
+    self._onceCallbacks[#self._onceCallbacks+1] = callback
 end
 
 function Signal:wait()
@@ -89,6 +107,7 @@ end
 -- cringe aliases
 Signal.Fire = Signal.fire
 Signal.Connect = Signal.connect
+Signal.Once = Signal.once
 Signal.Wait = Signal.wait
 
 return Signal
