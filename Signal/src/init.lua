@@ -46,12 +46,16 @@ end
 
 function Signal:fire(...: any?)
     for i = 1, #self._connections do
-        local callback = self._connections[i]
+        local callback = self._connections[i]._callback
         task.spawn(callback, ...)
     end
 end
 
 function Signal:connect(callback: (any...) -> ()): Connection
+    if not (type(callback) == "function") then
+        error("Invalid callback.")
+    end
+
     local connection = Connection.new(self, callback)
     connection._index = #self._connections + 1
     self._connections[#self._connections + 1] = connection
