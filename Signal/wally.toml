@@ -1,7 +1,10 @@
 [package]
-name = "wafflechad/signal"
+name = "hs747/signal"
 version = "1.0.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+
+# Ignore test files
+exclude = ["test.project.json", "test"]
 
 [dependencies]
