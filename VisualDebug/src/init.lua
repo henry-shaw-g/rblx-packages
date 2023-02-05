@@ -60,7 +60,7 @@ end
 
 local function createSphere(): Part
 	local sphere = createDebugPart()
-	sphere.Shape = Enum.PartType.Sphere
+	sphere.Shape = Enum.PartType.Ball
 	return sphere
 end
 
@@ -77,7 +77,7 @@ local function getSphere(t, cf, color, radius)
 	else
 		sphere = spherePool:use()
 	end
-	sphere.Color3 = getColor(color)
+	sphere.Color = getColor(color)
 	sphere.Size = Vector3.new(2 * radius, 2 * radius, 2 * radius)
 	sphere.CFrame = cf
 	return sphere
@@ -86,8 +86,10 @@ end
 local function getPart(t, cf, color, width, length)
 	local part
 	if t then
-		part = createPart()
-		debris:AddItem(part, t)
+		if not (t == visualDebug.PERMANENT) then
+			part = createPart()
+			debris:AddItem(part, t)
+		end
 	else
 		part = partPool:use()
 	end
@@ -119,6 +121,8 @@ local function render()
 end
 
 -- Public --
+visualDebug.PERMANENT = -1 -- time input flag to make a debug item permanent
+
 -- mini color library
 visualDebug.color = {
 	red 			= Color3.fromRGB(255, 0, 0),
