@@ -21,3 +21,14 @@ cleaner1:addMethod(foo, foo.bar)
 print("starting clean ...")
 cleaner1:clean()
 print("part parent: ", part.Parent)
+
+-- test 2
+local cleaner2 = Cleaner.new()
+local cleaner3 = Cleaner.new()
+cleaner3:add(function() 
+    print("im being chain cleaned?")
+end)
+cleaner2:add(cleaner3)
+
+print("starting clean ...")
+cleaner2:clean()
