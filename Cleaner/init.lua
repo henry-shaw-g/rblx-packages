@@ -4,7 +4,7 @@ local Cleaner = {}
 	author: Wafflechad
 	date: December 2022
 	todo:
-		* cleaner chaning
+		* cleaner chaining
 		* class destruction
 		* protected class
 ]]
@@ -36,10 +36,17 @@ local function cleanThing(thing: Instance | RBXScriptConnection)
 		thing:Disconnect()
 	elseif typeOfThing == "Instance" then
 		thing:Destroy()
+	elseif typeOfThing == "function" then
+		thing()
 	elseif typeOfThing == "table" then
+		if thing.Destroy then
+			thing:Destroy()
+		end 
 		if thing.__type == "LuauConnection" then
-			thing:disconnect() -- propietary to my Signal class
+			thing:Disconnect() -- propietary to my Signal class
 		end
+	elseif getmetatable(thing) == Cleaner then
+		thing:clean()
 	end
 end
 
