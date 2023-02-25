@@ -31,8 +31,8 @@ local ContextActionService = game:GetService("ContextActionService")
 
 -- PRIVATE
 local methodCallMeta = {
-	_call = function(self, ...)
-		self._method(self._obj, ...)
+	__call = function(self, ...)
+		return self._method(self._obj, ...)
 	end
 }
 
@@ -52,10 +52,11 @@ local function cleanThing(thing: Instance | RBXScriptConnection)
 		if thing.__type == "LuauConnection" then
 			thing:Disconnect() -- propietary to my Signal class
 		end
-	elseif meta == Cleaner then
-		thing:clean()
-	elseif meta == methodCallMeta then
-		thing()
+		if meta == Cleaner then
+			thing:clean()
+		elseif meta == methodCallMeta then
+			thing()	
+		end
 	end
 end
 
@@ -91,10 +92,10 @@ end
 
 -- utility adder which adds a method (object and function)
 function Cleaner:addMethod<T>(thing: T, method: (T, ...any?) -> ())
-	return setmetatable({
+	table.insert(self.things, setmetatable({
 		_obj = thing,
 		_method = method,
-	}, methodCallMeta)
+	}, methodCallMeta))
 end
 
 -- CAS bindings
