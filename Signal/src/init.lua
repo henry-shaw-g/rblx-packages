@@ -45,8 +45,11 @@ function Connection:disconnect()
     self._signal._numConnections -= 1
 end
 
--- cringe alias
+
+-- more virtual aliases
 Connection.Disconnect = Connection.disconnect
+Connection.destroy = Connection.disconnect
+Connection.Destroy = Connection.disconnect
 
 -- Public --
 local Signal = {}
