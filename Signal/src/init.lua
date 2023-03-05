@@ -63,6 +63,13 @@ function Signal.new(): Signal
     return self
 end
 
+function Signal:destroy()
+    -- clear all listeners
+    table.clear(self._onceCallbacks)
+    table.clear(self._connections)
+    self._numConnections = 0
+end
+
 function Signal:fire(...: any?)
     for i = self._numConnections, 1, -1 do -- iterate backwards in case any connections disconnect themselves
         local callback = self._connections[i]._callback
@@ -107,7 +114,7 @@ function Signal:wait()
     return coroutine.yield(running)
 end
 
--- cringe aliases
+Signal.Destroy = Signal.destroy
 Signal.Fire = Signal.fire
 Signal.Connect = Signal.connect
 Signal.Once = Signal.once
