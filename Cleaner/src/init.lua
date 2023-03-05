@@ -37,7 +37,7 @@ local methodCallMeta = {
 }
 
 local function cleanThing(thing: Instance | RBXScriptConnection)
-	local typeOfThing = typeof(thing)
+	local typeOfThing = type(thing)
 	local meta = getmetatable(thing)
 	if typeOfThing == "RBXScriptConnection" then
 		thing:Disconnect()
@@ -48,9 +48,6 @@ local function cleanThing(thing: Instance | RBXScriptConnection)
 	elseif typeOfThing == "table" then
 		if thing.Destroy then
 			thing:Destroy()
-		end 
-		if thing.__type == "LuauConnection" then
-			thing:Disconnect() -- propietary to my Signal class
 		end
 		if meta == Cleaner then
 			thing:clean()
