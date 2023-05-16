@@ -40,7 +40,7 @@ end
 local sectionsMap = {}
 local sectionsList = {}
 
-local function layoutAllSections(list: {Section})
+local function layoutAllSections(list: {_Section})
     local at = Vector2.new(Defaults.section.outerPadding, Defaults.section.outerPadding)
     local wmax = 0
     local n = 1
@@ -71,7 +71,7 @@ type Label = {
 local Section = {}
 Section.__index = Section
 
-export type Section = typeof(setmetatable({} :: {
+type _Section = typeof(setmetatable({} :: {
     frame: Frame,
     labels: {[string]: Label},
     ordered: {Label},
@@ -80,8 +80,22 @@ export type Section = typeof(setmetatable({} :: {
         text: string,
         instance: TextLabel?,
     },
+    showing: boolean,
     relayoutFlag: boolean,
+
+    showCallback: (_Section) -> ()?,
+    hideCallback: (_Section) -> ()?,
 }, Section))
+
+export type Section = {
+    hideLabel: (Section) -> (),
+    writeLabel: (Section) -> (),
+    writeLabelFormat: (Section, string, string) -> (),
+    removeLabel: (Section) -> (),
+    setHeader: (Section) -> (),
+    show: (Section) -> (),
+    hide: (Section) -> (),
+}
 
 local function makeLabel(): TextLabel
     local inst = Instance.new("TextLabel")
@@ -95,7 +109,7 @@ local function makeLabel(): TextLabel
     return inst
 end
 
-local function layoutSection(self: Section)
+local function layoutSection(self: _Section)
     local y = 2
     local wmax = 0
 
@@ -133,7 +147,7 @@ local function layoutSection(self: Section)
     layoutAllSections(sectionsList)
 end
 
-local function requestSectionRelayout(self: Section)
+local function requestSectionRelayout(self: _Section)
     if self.relayoutFlag then return end
     self.relayoutFlag = true
     task.spawn(function()
@@ -143,7 +157,7 @@ local function requestSectionRelayout(self: Section)
     end)
 end
 
-function Section.new(id): Section
+function Section.new(id): _Section
     local frame: Frame = Instance.new("Frame")
     frame.Position = UDim2.new(0, 10, 0, 10)
     frame.Size = UDim2.new(0, Defaults.section.maxWidth, 0, 0)
@@ -151,7 +165,7 @@ function Section.new(id): Section
     frame.BackgroundColor3 = Defaults.section.backgroundColor
     frame.Parent = screenGui
 
-    local self: Section = setmetatable({
+    local self: _Section = setmetatable({
         frame = frame,
         labels = {},
         ordered = {},
@@ -159,14 +173,30 @@ function Section.new(id): Section
         header = {
             text = "unnamed section",
         },
-        relayoutFlag = false
+        relayoutFlag = false,
+        showing = false,
     }, Section)
     requestSectionRelayout(self)
 
     return self
 end
 
-function Section.writeLabel(self: Section, id: string, line: string)
+function Section.setHeader(self: _Section, header: string)
+    self.header.text = header
+    requestSectionRelayout(self)
+end
+
+function Section.show(self: _Section)
+    local callback = self.showCallback
+    if callback then callback() end
+end
+
+function Section.hide(self: _Section)
+    local callback = self.hideCallback
+    if callback then callback(self) end
+end
+
+function Section.writeLabel(self: _Section, id: string, line: string)
     local label: Label = self.labels[id]
     if not label then
         local newLabel = {
@@ -180,11 +210,11 @@ function Section.writeLabel(self: Section, id: string, line: string)
     requestSectionRelayout(self)
 end
 
-function Section.writeLabelFormat(self: Section, id: string, format: string, ...: any?)
+function Section.writeLabelFormat(self: _Section, id: string, format: string, ...: any?)
     self:writeLabel(id, string.format(format, ...))
 end
 
-function Section.removeLabel(self: Section, id: string)
+function Section.removeLabel(self: _Section, id: string)
     local label = self.labels[id]
     assert(label, `No label of id {id}`)
     local index = table.find(self.ordered, label)
@@ -195,25 +225,34 @@ function Section.removeLabel(self: Section, id: string)
     requestSectionRelayout(self)
 end
 
-function Section.getAbsSize(self: Section): Vector2
+function Section.getAbsSize(self: _Section): Vector2
     return self.frame.AbsoluteSize
 end
 
-function Section.setHeader(self: Section, header: string)
-    self.header.text = header
-    requestSectionRelayout(self)
+local TextDebug = {}
+
+local function showSectionCallback(section: _Section)
+    section.showing = true
+    section.frame.Visible = true
+    table.insert(sectionsList, section)
 end
 
-local TextDebug = {}
+local function hideSectionCallback(section: _Section)
+    section.showing = false
+    section.frame.Visible = false
+    local index = table.find(sectionsList, section) -- TODO: NOT THIS
+    if index then table.remove(sectionsList, index) end
+end
 
 -- desc: register a new section
 function TextDebug.section(): Section
     local id = tempUID()
     local section = Section.new(id)
+    section.showCallback = showSectionCallback
+    section.hideCallback = hideSectionCallback
 
     sectionsMap[id] = section
-    table.insert(sectionsList, section)
-    layoutAllSections(sectionsList)
+    showSectionCallback(section)
 
     return section
 end
@@ -235,7 +274,7 @@ screenGui.DisplayOrder = 1000
 screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
 RunService.RenderStepped:Connect(function()
-    -- TEMP:
+    -- TODO: NOT THIS
     layoutAllSections(sectionsList)
 end)
 

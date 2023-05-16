@@ -16,7 +16,6 @@ local section3 = TextDebug.section()
 section3:setHeader("section 3:")
 section3:writeLabel("LABEL_1", "in second column.")
 
-
 task.spawn(function()
     local n = 1
     while task.wait(0.1) do
@@ -26,4 +25,11 @@ task.spawn(function()
         n %= 20
         n += 1
     end
+end)
+
+local section4 = TextDebug.section()
+section4:setHeader("bye :C")
+section4:writeLabel("poop", "later")
+task.delay(4, function() 
+    section4:hide()
 end)
