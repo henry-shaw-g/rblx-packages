@@ -78,7 +78,7 @@ function Signal:fire(...: any?)
 
     for i = #self._onceCallbacks, 1, -1 do
         local callback = self._onceCallbacks[i]
-        callback(...)
+        task.spawn(callback, ...)
     end
     table.clear(self._onceCallbacks)
 end
