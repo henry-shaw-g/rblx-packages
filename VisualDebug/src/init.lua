@@ -60,7 +60,7 @@ end
 
 local function createSphere(): Part
 	local sphere = createDebugPart()
-	sphere.Shape = Enum.PartType.Sphere
+	sphere.Shape = Enum.PartType.Ball
 	return sphere
 end
 
@@ -77,7 +77,7 @@ local function getSphere(t, cf, color, radius)
 	else
 		sphere = spherePool:use()
 	end
-	sphere.Color3 = getColor(color)
+	sphere.Color = getColor(color)
 	sphere.Size = Vector3.new(2 * radius, 2 * radius, 2 * radius)
 	sphere.CFrame = cf
 	return sphere
