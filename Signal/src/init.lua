@@ -1,3 +1,4 @@
+--!nonstrict
 --[[
     Signal: Lua sided script signal.
     Author: Wafflechad (hs747)
@@ -10,11 +11,11 @@ export type Connection = {
     disconnect: () -> ();
 }
 
-export type Signal = {
-    fire: (any...) -> (),
-    connect: (Callback) -> Connection,
-    once: (Callback) -> (),
-    wait: () -> (any...)
+export type Signal<Args...> = {
+    fire: (Signal<Args...>, Args...) -> (),
+    connect: (Signal<Args...>, Callback) -> Connection,
+    once: (Signal<Args...>, Callback) -> (),
+    wait: () -> (Args...)
 }
 
 -- Private --
@@ -55,7 +56,7 @@ Connection.Destroy = Connection.disconnect
 local Signal = {}
 Signal.__index = Signal
 
-function Signal.new(): Signal
+function Signal.new<T...>(): Signal<T...>
     local self = setmetatable({}, Signal)
     self._onceCallbacks = {}
     self._connections = {}
