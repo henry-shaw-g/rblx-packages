@@ -1,0 +1,9 @@
+{
+    "name": "textdebug",
+    "tree": {
+        "$path": "src",
+        "idk": {
+            "$className" : "Folder"
+        }
+    }
+}

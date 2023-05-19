@@ -1,0 +1,8 @@
+[package]
+name = "hs747/textdebug"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+exclude = ["test", "test.project.json"]
+
+[dependencies]
