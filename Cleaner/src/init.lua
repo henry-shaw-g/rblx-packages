@@ -4,7 +4,7 @@ local Cleaner = {}
 	author: Wafflechad
 	date: December 2022
 	todo:
-		* cleaner chaning
+		* cleaner chaining
 		* class destruction
 		* protected class
 ]]
@@ -30,15 +30,29 @@ local RunService = game:GetService("RunService")
 local ContextActionService = game:GetService("ContextActionService")
 
 -- PRIVATE
+local methodCallMeta = {
+	__call = function(self, ...)
+		return self._method(self._obj, ...)
+	end
+}
+
 local function cleanThing(thing: Instance | RBXScriptConnection)
-	local typeOfThing = typeof(thing)
+	local typeOfThing = type(thing)
+	local meta = getmetatable(thing)
 	if typeOfThing == "RBXScriptConnection" then
 		thing:Disconnect()
 	elseif typeOfThing == "Instance" then
 		thing:Destroy()
+	elseif typeOfThing == "function" then
+		thing()
 	elseif typeOfThing == "table" then
-		if thing.__type == "LuauConnection" then
-			thing:disconnect() -- propietary to my Signal class
+		if thing.Destroy then
+			thing:Destroy()
+		end
+		if meta == Cleaner then
+			thing:clean()
+		elseif meta == methodCallMeta then
+			thing()	
 		end
 	end
 end
@@ -71,6 +85,14 @@ end
 -- instances (and connections)
 function Cleaner:add(thing)
 	table.insert(self.things, thing)
+end
+
+-- utility adder which adds a method (object and function)
+function Cleaner:addMethod<T>(thing: T, method: (T, ...any?) -> ())
+	table.insert(self.things, setmetatable({
+		_obj = thing,
+		_method = method,
+	}, methodCallMeta))
 end
 
 -- CAS bindings
