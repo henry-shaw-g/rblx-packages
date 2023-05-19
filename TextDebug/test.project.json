@@ -1,0 +1,21 @@
+{
+    "name": "textdebugtest",
+    "tree": {
+        "$className": "DataModel",
+
+        "StarterPlayer": {
+            "StarterPlayerScripts": {
+                "$path": "test/client"
+            }
+        },
+
+        "ReplicatedStorage": {
+            "Shared": {
+                "$className": "Folder",
+                "TextDebug": {
+                    "$path": "src"   
+                }
+            }
+        }
+    }
+}
